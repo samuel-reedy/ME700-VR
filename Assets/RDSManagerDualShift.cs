@@ -171,14 +171,6 @@ namespace Autohand.Demo
 
 
 
-        bool primaryButton = false;
-        bool prevPrimaryButton = false;
-
-        bool secondaryButton = false;
-        bool prevSecondaryButton = false;
-
-
-
 
 
         private void Update()
