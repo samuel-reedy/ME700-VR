@@ -49,8 +49,7 @@ namespace Autohand.Demo
         private bool pressedPrimary;
         private bool pressedSecondary;
 
-        bool isDeciding;
-        bool countingDown;
+    
         bool inFront;
 
         
@@ -162,8 +161,7 @@ namespace Autohand.Demo
             countdownTimeLeft = countdownTime;
             displayTimeLeft = displayTime;
 
-            isDeciding = false;
-            countingDown = false;
+ 
 
             GenerateShows();
         }

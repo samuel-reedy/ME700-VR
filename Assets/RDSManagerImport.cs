@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.IO;
 
 public class RDSManagerImport : MonoBehaviour
 {
@@ -38,14 +39,20 @@ public class RDSManagerImport : MonoBehaviour
     [SerializeField] List<RDS> all_RDS;
     [SerializeField] List<RDS> possible_RDSs;
 
-    bool isDeciding;
-    bool countingDown;
+    [SerializeField] bool usePercentageShifted;
+
+    [SerializeField] List<SCORE> scoreList;
+
     bool inFront;
 
     private bool pressedPrimary;
     private bool pressedSecondary;
 
     STATE currentState;
+
+    SCORE currentScore;
+
+    
 
     enum STATE
     {
@@ -60,11 +67,19 @@ public class RDSManagerImport : MonoBehaviour
     {
         possible_RDSs.Clear();
 
-        for (int i = 0; i < all_RDS.Count; i++)
+        if (usePercentageShifted)
         {
-            RDS rds = this.all_RDS[i];
-            if (rds.percentage_shift == percentageShifted) possible_RDSs.Add(rds);
+            for (int i = 0; i < all_RDS.Count; i++)
+            {
+                RDS rds = this.all_RDS[i];
+                if (rds.percentage_shift == percentageShifted) possible_RDSs.Add(rds);
+            }
         }
+        else
+        {
+            possible_RDSs = new List<RDS>(all_RDS);
+        }
+        
 
         if (possible_RDSs.Count == 0) return true;
 
@@ -72,6 +87,26 @@ public class RDSManagerImport : MonoBehaviour
         inFront = !possible_RDSs[indexToUse].left_shifted;
         leftPlaneRenderer.material.mainTexture = possible_RDSs[indexToUse].textA;
         rightPlaneRenderer.material.mainTexture = possible_RDSs[indexToUse].textB;
+
+        bool foundScore = false;
+        foreach(SCORE score in scoreList)
+        {
+            if (score.percentage_shift == possible_RDSs[indexToUse].percentage_shift)
+            {
+                currentScore = score;
+                foundScore = true;
+                break;
+            }
+            
+        }
+
+        if (!foundScore)
+        {
+            SCORE score = ScriptableObject.CreateInstance<SCORE>();
+            score.percentage_shift = possible_RDSs[indexToUse].percentage_shift;
+            scoreList.Add(score);
+            currentScore = score;
+        }
 
         all_RDS.Remove(possible_RDSs[indexToUse]);
 
@@ -92,11 +127,10 @@ public class RDSManagerImport : MonoBehaviour
         countdownTimeLeft = countdownTime;
         displayTimeLeft = displayTime;
 
-        isDeciding = false;
-        countingDown = false;
-
         RDSGenerator.GenerateList();
         all_RDS = RDSGenerator.RDS_List;
+
+        dataSetSize = all_RDS.Count;
     }
 
     // Update is called once per frame
@@ -147,7 +181,7 @@ public class RDSManagerImport : MonoBehaviour
         RightPlane.SetActive(false);
 
         countdownTimeLeft -= Time.deltaTime;
-        countDownTimeText.text = "" + (int)countdownTimeLeft;
+        countDownTimeText.text = "" + (int)(countdownTimeLeft+1);
         countDownTimeText.color = new Color(1, 1, 1, countdownTimeLeft / countdownTime);
 
         if (countdownTimeLeft <= 0)
@@ -188,11 +222,15 @@ public class RDSManagerImport : MonoBehaviour
     {
         if (pressedPrimary || pressedSecondary)
         {
-            bool guessInFront = pressedPrimary ? true : false;
-            if ((guessInFront && inFront) || (!guessInFront && !inFront)) correctCounter++;
+            bool guessInFront = pressedPrimary ? false : true;
+            if ((guessInFront && inFront) || (!guessInFront && !inFront))
+            {
+                correctCounter++;
+                currentScore.correct++;
+            }
+            
             completed++;
-
-
+            currentScore.count++;
 
             correctText.text = "" + (int)(correctCounter / (float)completed * 100.0) + "%";
             remainingText.text = "" + completed + "/" + dataSetSize;
@@ -204,10 +242,43 @@ public class RDSManagerImport : MonoBehaviour
         return STATE.GUESS;
     }
 
+    bool displayedResults = false;
     STATE Finish()
     {
+        if (!displayedResults)
+        {
+            displayedResults = true;
+            scoreList.Sort(SortByScore);
+            foreach(SCORE score in scoreList)
+            {
+                Debug.Log("%Shift: " + score.percentage_shift + ", %Correct: " + score.getScore());
+            }
+            CreateText();
+        }
         Debug.Log("Finish");
         return STATE.FINISH;
+    }
+
+    static int SortByScore(SCORE s1, SCORE s2)
+    {
+        return s1.percentage_shift.CompareTo(s2.percentage_shift);
+    }
+
+    void CreateText()
+    {
+        string path = Application.dataPath + "/Log.txt";
+        if (!File.Exists(path))
+        {
+            File.WriteAllText(path, "");
+        }
+
+        string content = System.DateTime.Now + ":\n";
+        foreach(SCORE score in scoreList)
+        {
+            content = content + score.percentage_shift + ", " + score.getScore() + "\n";
+        }
+
+        File.AppendAllText(path, content);
     }
 
 }

@@ -2,6 +2,12 @@ import random
 import copy
 import png
 import numpy
+import os
+
+def cls():
+    os.system('cls' if os.name=='nt' else 'clear')
+
+
 
 # Generates a single Random Dot image
 def Generate_RDS(image_size):
@@ -25,11 +31,22 @@ def Shift_Pixels(image, image_size, shift_size, shift_amout, shift_percentage):
     start_x = int((image_size / 2) - (shift_size / 2))
     start_y = start_x
 
-    for y in range(start_y, start_y + shift_size):
-        for x in range(start_x, start_x + shift_size):
-            if (random.randint(1,100) <= shift_percentage):
-                image_temp[y][x] = image[y][x + shift_amout]
-                image_temp[y][x + shift_amout] = random.randint(0,1) 
+
+
+    if (shift_amout > 0):
+        for y in range(start_y, start_y + shift_size, 1):
+            for x in range(start_x, start_x + shift_size, 1):
+                if (random.randint(1,100) <= shift_percentage):
+                    image_temp[y][x] = image[y][x + shift_amout]
+                    #image_temp[y][x + shift_amout] = random.randint(0,1) 
+    else:
+        for y in range(start_y + shift_size, start_y, -1):
+            for x in range(start_x + shift_size, start_x, -1):
+                if (random.randint(1,100) <= shift_percentage):
+                    image_temp[y][x + shift_amout] = image[y][x]
+
+
+
 
     return image_temp
 
@@ -71,9 +88,9 @@ def Scale_Image(image, image_size, scale):
 def Save_Image(image, name):
     size = len(image);
     image = Scale_Image(image, size, 4)
-    size_new = size * 4
+    size = size * 4
 
-    s = Convert_Image_To_String(image, size_new)
+    s = Convert_Image_To_String(image, size)
     s = [[int(c) for c in row] for row in s]
     w = png.Writer(len(s[0]), len(s), greyscale=True, bitdepth=1)
     f = open(name, 'wb')
@@ -81,22 +98,22 @@ def Save_Image(image, name):
     f.close()
 
 # Image Variables
-image_size = 100
-shift_size = 40
+image_size = 100    
+shift_size = 60
 shift_amount = 4
-shift_percentage = 100
+
+#VR: 300, 60, 4
 
 #Image Quanitity
 RDS_count = 1
 RDS_location = 'RDS/'
 RDS_name = 'RDS'
 
-
-
+increment = 2
 for i in range(RDS_count):
-    for j in range(0, 11):
-        shift_percentage = j * 10
-        # Right Shift
+    for j in range(0, 101, increment):
+        shift_percentage = j
+        # Right Shift 
         image = Generate_RDS(image_size)
         image_clone = Shift_Pixels(image, image_size, shift_size, shift_amount, shift_percentage)
 
@@ -115,3 +132,8 @@ for i in range(RDS_count):
         Save_Image(image_clone, name)
         name = location_name + '_' + 'B' +'.png'
         Save_Image(image, name)
+        
+        print((int)(((i*RDS_count)+j) / ((101)*RDS_count) * 100))
+
+
+
