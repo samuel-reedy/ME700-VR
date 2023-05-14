@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.IO;
+using System.Security.Cryptography;
 
 public class RDSManagerImport : MonoBehaviour
 {
@@ -223,14 +224,19 @@ public class RDSManagerImport : MonoBehaviour
         if (pressedPrimary || pressedSecondary)
         {
             bool guessInFront = pressedPrimary ? false : true;
-            if ((guessInFront && inFront) || (!guessInFront && !inFront))
+            if (inFront)
             {
-                correctCounter++;
-                currentScore.correct++;
+                currentScore.count_right++;
+                if (guessInFront) currentScore.correct_right++;
             }
-            
+
+            if (!inFront)
+            {
+                currentScore.count_left++;
+                if (!guessInFront) currentScore.correct_left++;
+            }
+
             completed++;
-            currentScore.count++;
 
             correctText.text = "" + (int)(correctCounter / (float)completed * 100.0) + "%";
             remainingText.text = "" + completed + "/" + dataSetSize;
@@ -249,10 +255,6 @@ public class RDSManagerImport : MonoBehaviour
         {
             displayedResults = true;
             scoreList.Sort(SortByScore);
-            foreach(SCORE score in scoreList)
-            {
-                Debug.Log("%Shift: " + score.percentage_shift + ", %Correct: " + score.getScore());
-            }
             CreateText();
         }
         Debug.Log("Finish");
@@ -275,7 +277,8 @@ public class RDSManagerImport : MonoBehaviour
         string content = System.DateTime.Now + ":\n";
         foreach(SCORE score in scoreList)
         {
-            content = content + score.percentage_shift + ", " + score.getScore() + "\n";
+            content = content + score.percentage_shift + ", " + score.correct_right + ", " + score.count_right
+                + ", " + score.correct_left + ", " + score.count_left + "\n";
         }
 
         File.AppendAllText(path, content);

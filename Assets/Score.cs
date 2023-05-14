@@ -6,8 +6,10 @@ using UnityEngine;
 public class SCORE : ScriptableObject
 {
     [SerializeField] int _percentage_shift;
-    [SerializeField] int _count;
-    [SerializeField] int _correct;
+    [SerializeField] int _count_left;
+    [SerializeField] int _count_right;
+    [SerializeField] int _correct_left;
+    [SerializeField] int _correct_right;
 
     public int percentage_shift
     {
@@ -15,22 +17,46 @@ public class SCORE : ScriptableObject
         set { _percentage_shift = value; }
     }
 
-    public int count
+    public int count_left
     {
-        get { return _count; }
-        set { _count = value; }
+        get { return _count_left; }
+        set { _count_left = value; }
     }
 
-    public int correct
+    public int count_right
     {
-        get { return _correct; }
-        set { _correct = value; }
+        get { return _count_right; }
+        set { _count_right = value; }
     }
 
-    public float getScore()
+    public int correct_left
     {
-        return _correct / (float)_count;
+        get { return _correct_left; }
+        set { _correct_left = value; }
     }
 
-   
+    public int correct_right
+    {
+        get { return _correct_right; }
+        set { _correct_right = value; }
+    }
+
+    public float getScoreLeft()
+    {
+        return _correct_left / (float)_count_left;
+    }
+
+    public float getScoreRight()
+    {
+        return _correct_right / (float)_count_right;
+    }
+
+    
+
+    public float getScoreTotal()
+    {
+        return (_correct_left + _correct_right) / (float)(_count_left + _count_right);
+    }
+
+
 }
