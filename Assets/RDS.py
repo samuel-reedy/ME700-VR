@@ -1,6 +1,5 @@
 import random
 import copy
-import png
 import numpy as np
 import imageio
 import time
@@ -52,16 +51,20 @@ scale = 4
 #VR: 300, 60, 4
 
 #Image Quanitity
-RDS_count = 100
-RDS_location = 'RDS/'
+RDS_count = 3*10
+RDS_location = 'RDSZero/'
+#RDS_location = 'RDS/'
 RDS_name = 'RDS'
+
+#percentages = [10,20,30,40,50,60,70,80,90,100]
+percentages = [0]
 
 
 increment = 10
 
 for i in range(RDS_count):
-    for j in range(0, 101, increment):
-        shift_percentage = j
+    for j in range(len(percentages)):
+        shift_percentage = percentages[j]
         # Right Shift 
         image = Generate_RDS(image_size)
         image_clone = Shift_Pixels(image, image_size, shift_size, shift_amount, shift_percentage)
